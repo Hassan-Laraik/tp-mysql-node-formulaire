@@ -1,0 +1,229 @@
+Bien sûr ! Voici le fichier `README.md` **complet et assemblé** que tu peux directement utiliser :
+
+---
+
+# 📦 API et Formulaire d'Ajout Client (Node.js + Express + MySQL)
+
+Ce projet contient deux serveurs :
+- **API REST** pour ajouter un client dans une base de données MySQL.
+- **Serveur de formulaire** pour soumettre les données via une interface web.
+
+---
+
+## ⚙️ Prérequis
+
+- Node.js installé 👉 [Télécharger Node.js](https://nodejs.org/)
+- MySQL installé et en cours d'exécution
+
+---
+
+## 🛠️ Installation
+
+1. **Cloner le projet**
+
+```bash
+git clone <URL_DU_DEPOT>
+cd <nom_du_projet>
+```
+
+2. **Installer les dépendances**
+
+```bash
+npm install
+```
+
+3. **Configurer la base de données**
+
+Créer une base de données `testdb` :
+
+```sql
+CREATE DATABASE testdb;
+```
+
+Créer une table `clients` :
+
+```sql
+CREATE TABLE clients (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL
+);
+```
+
+4. **Configurer la connexion MySQL**
+
+Dans `server.js`, modifier les informations de connexion :
+
+```javascript
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',  // <-- Mettre votre mot de passe MySQL ici
+  database: 'testdb'
+});
+```
+
+---
+
+## 📄 Fichiers principaux
+
+### server.js (API Express)
+
+```javascript
+const express = require('express');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '', 
+  database: 'testdb'
+});
+
+db.connect(err => {
+  if (err) throw err;
+  console.log('Connecté à la base de données MySQL');
+});
+
+app.post('/api/clients', (req, res) => {
+  const { nom, email } = req.body;
+  const sql = 'INSERT INTO clients (nom, email) VALUES (?, ?)';
+  db.query(sql, [nom, email], (err, result) => {
+    if (err) {
+      console.error('Erreur lors de l\'ajout du client :', err);
+      res.status(500).send('Erreur serveur');
+    } else {
+      res.send('Client ajouté avec succès');
+    }
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API serveur écoute sur http://localhost:3000');
+});
+```
+
+---
+
+### formServer.js (Serveur Formulaire)
+
+```javascript
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
+const path = require('path');
+
+const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.get('/', (req, res) => {
+  res.render('form');
+});
+
+app.post('/submit', async (req, res) => {
+  const { nom, email } = req.body;
+  try {
+    await axios.post('http://localhost:3000/api/clients', { nom, email });
+    res.send('Client ajouté avec succès !');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de l\'ajout du client');
+  }
+});
+
+app.listen(4000, () => {
+  console.log('Serveur Formulaire écoute sur http://localhost:4000');
+});
+```
+
+---
+
+### views/form.ejs (Formulaire HTML)
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ajouter un client</title>
+</head>
+<body>
+  <h1>Ajouter un client</h1>
+  <form action="/submit" method="POST">
+    <label for="nom">Nom :</label>
+    <input type="text" id="nom" name="nom" required>
+    <br><br>
+    <label for="email">Email :</label>
+    <input type="email" id="email" name="email" required>
+    <br><br>
+    <button type="submit">Ajouter</button>
+  </form>
+</body>
+</html>
+```
+
+---
+
+## 🚀 Lancer les serveurs
+
+Dans deux terminaux différents :
+
+### 1. API Serveur (port 3000)
+
+```bash
+node server.js
+```
+
+### 2. Serveur Formulaire (port 4000)
+
+```bash
+node formServer.js
+```
+
+---
+
+## 📡 Résultat attendu
+
+- **Accéder au formulaire** : [http://localhost:4000](http://localhost:4000)
+- **Ajouter un client** : Remplir et soumettre le formulaire
+- **Résultat** : Données insérées dans la base de données `clients`
+
+---
+
+## 📋 Technologies utilisées
+
+- Node.js
+- Express
+- MySQL
+- EJS
+- Axios
+- Body-parser
+- Cors
+
+---
+
+## ✅ Améliorations possibles
+
+- Validation avancée des champs
+- Messages d'erreurs plus détaillés
+- Protection de l'API (authentification avec JWT)
+- Dockerisation du projet
+
+---
+
+**Auteur :**  
+*Ton Nom* 🚀
+
+---
+
+Veux-tu que je te prépare aussi un `package.json` complet pour que tout fonctionne en un seul `npm install` ? 🎯  
+(Ça t'évite d'installer express, mysql2, ejs, axios, body-parser et cors à la main.)  
+Je peux te le générer tout de suite si tu veux ! 🚀
